@@ -19,7 +19,6 @@
 #
 from __future__ import print_function
 import os
-import platform
 import shutil
 import subprocess
 import sys
@@ -28,22 +27,9 @@ import time
 import unittest
 
 
-def thrift_executable_path():
-    return sys.argv[-1]
-    if platform.system() == "Windows":
-        thrift_executable_dir_path = os.path.join(os.environ["BUILDDIR"], "compiler", "cpp", "bin")
-        if os.environ["PROFILE"] == "MINGW":
-            return os.path.join(thrift_executable_dir_path, "thrift.exe")
-        else:
-            return os.path.join(thrift_executable_dir_path, "Release", "thrift.exe")
-    else:
-        return os.path.join(os.environ["THRIFT_ROOT"], "src", "cmake_build", "compiler", "cpp", "bin", "thrift")
-
-
 class TestStalenessCheck(unittest.TestCase):
 
     CURRENT_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
-    # THRIFT_EXECUTABLE_PATH = thrift_executable_path()
     THRIFT_EXECUTABLE_PATH = None
     SINGLE_THRIFT_FILE_PATH = os.path.join(CURRENT_DIR_PATH, "Single.thrift")
     INCLUDING_THRIFT_FILE_PATH = os.path.join(CURRENT_DIR_PATH, "Including.thrift")
@@ -149,6 +135,8 @@ def suite():
 
 
 if __name__ == "__main__":
+    # The path of Thrift compiler  is  passed as an argument to the test script.
+    # Remove it to not confuse the unit testing framework
     TestStalenessCheck.THRIFT_EXECUTABLE_PATH = sys.argv[-1]
     del sys.argv[-1]
     unittest.main(defaultTest="suite", testRunner=unittest.TextTestRunner(verbosity=2))
