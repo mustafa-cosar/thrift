@@ -22,12 +22,14 @@ import os
 import platform
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 import unittest
 
 
 def thrift_executable_path():
+    return sys.argv[-1]
     if platform.system() == "Windows":
         thrift_executable_dir_path = os.path.join(os.environ["BUILDDIR"], "compiler", "cpp", "bin")
         if os.environ["PROFILE"] == "MINGW":
