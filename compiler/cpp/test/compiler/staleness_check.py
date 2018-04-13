@@ -43,7 +43,8 @@ def thrift_executable_path():
 class TestStalenessCheck(unittest.TestCase):
 
     CURRENT_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
-    THRIFT_EXECUTABLE_PATH = thrift_executable_path()
+    # THRIFT_EXECUTABLE_PATH = thrift_executable_path()
+    THRIFT_EXECUTABLE_PATH = None
     SINGLE_THRIFT_FILE_PATH = os.path.join(CURRENT_DIR_PATH, "Single.thrift")
     INCLUDING_THRIFT_FILE_PATH = os.path.join(CURRENT_DIR_PATH, "Including.thrift")
     INCLUDED_THRIFT_FILE_PATH = os.path.join(CURRENT_DIR_PATH, "Included.thrift")
@@ -148,4 +149,6 @@ def suite():
 
 
 if __name__ == "__main__":
+    TestStalenessCheck.THRIFT_EXECUTABLE_PATH = sys.argv[-1]
+    del sys.argv[-1]
     unittest.main(defaultTest="suite", testRunner=unittest.TextTestRunner(verbosity=2))
