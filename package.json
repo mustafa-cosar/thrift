@@ -53,6 +53,7 @@
     "utf-8-validate": "^4.0.0",
     "typescript": "^3.1.6",
     "@types/node": "^10.12.6",
+    "@types/node-int64": "^0.4.29",
     "@types/q": "^1.5.1"
   },
   "scripts": {
