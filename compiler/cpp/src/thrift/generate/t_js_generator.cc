@@ -41,6 +41,8 @@ using std::stringstream;
 using std::vector;
 
 static const string endl = "\n"; // avoid ostream << std::endl flushes
+static const long max_safe_integer = 0x1fffffffffffff;
+static const long min_safe_integer = -0x1fffffffffffff;
 
 #include "thrift/generate/t_oop_generator.h"
 
@@ -448,6 +450,7 @@ string t_js_generator::js_includes() {
     if (!gen_es6_) {
       result += js_const_type_ + "Q = thrift.Q;\n";
     }
+    result += js_const_type_ + "Int64 = require('node-int64');\n";
     return result;
   }
 
@@ -462,7 +465,8 @@ string t_js_generator::ts_includes() {
     return string(
         "import thrift = require('thrift');\n"
         "import Thrift = thrift.Thrift;\n"
-        "import Q = thrift.Q;\n");
+        "import Q = thrift.Q;\n"
+        "import Int64 = require('node-int64');");
   }
 
   return "";
@@ -593,8 +597,14 @@ string t_js_generator::render_const_value(t_type* type, t_const_value* value) {
     case t_base_type::TYPE_I8:
     case t_base_type::TYPE_I16:
     case t_base_type::TYPE_I32:
-    case t_base_type::TYPE_I64:
       out << value->get_integer();
+      break;
+    case t_base_type::TYPE_I64:
+      if (value->get_integer() <= max_safe_integer && value->get_integer() >= min_safe_integer) {
+        out << "new Int64(" << value->get_integer() << ")";
+      } else {
+        out << "new Int64('" << std::hex << value->get_integer() << std::dec << "')";
+      }
       break;
     case t_base_type::TYPE_DOUBLE:
       if (value->get_type() == t_const_value::CV_INTEGER) {
@@ -2572,9 +2582,11 @@ string t_js_generator::ts_get_type(t_type* type) {
       break;
     case t_base_type::TYPE_I16:
     case t_base_type::TYPE_I32:
-    case t_base_type::TYPE_I64:
     case t_base_type::TYPE_DOUBLE:
       ts_type = "number";
+      break;
+    case t_base_type::TYPE_I64:
+      ts_type = "Int64";
       break;
     case t_base_type::TYPE_VOID:
       ts_type = "void";
