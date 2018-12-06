@@ -41,8 +41,10 @@ using std::stringstream;
 using std::vector;
 
 static const string endl = "\n"; // avoid ostream << std::endl flushes
+// largest consecutive integer representable by a double (2 ^ 53 - 1)
 static const long max_safe_integer = 0x1fffffffffffff;
-static const long min_safe_integer = -0x1fffffffffffff;
+// smallest consecutive number representable by a double (-2 ^ 53 + 1)
+static const long min_safe_integer = -max_safe_integer;
 
 #include "thrift/generate/t_oop_generator.h"
 
@@ -600,10 +602,13 @@ string t_js_generator::render_const_value(t_type* type, t_const_value* value) {
       out << value->get_integer();
       break;
     case t_base_type::TYPE_I64:
-      if (value->get_integer() <= max_safe_integer && value->get_integer() >= min_safe_integer) {
-        out << "new Int64(" << value->get_integer() << ")";
-      } else {
-        out << "new Int64('" << std::hex << value->get_integer() << std::dec << "')";
+      {
+        int64_t const& integer_value = value->get_integer();
+        if (integer_value <= max_safe_integer && integer_value >= min_safe_integer) {
+          out << "new Int64(" << integer_value << ")";
+        } else {
+          out << "new Int64('" << std::hex << integer_value << std::dec << "')";
+        }
       }
       break;
     case t_base_type::TYPE_DOUBLE:

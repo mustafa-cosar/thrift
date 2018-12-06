@@ -2,6 +2,7 @@
   "name": "thrift",
   "version": "1.0.0",
   "devDependencies": {
+    "browserify": "^16.2.3",
     "grunt": "^1.0.2",
     "grunt-cli": "^1.2.0",
     "grunt-contrib-concat": "^1.0.1",
@@ -10,7 +11,8 @@
     "grunt-contrib-uglify": "^1.0.1",
     "grunt-jsdoc": "^2.2.1",
     "grunt-shell-spawn": "^0.3.10",
-    "jslint": "^0.12.0"
+    "jslint": "^0.12.0",
+    "node-int64": "^0.4.0"
   },
   "dependencies": {
     "jsdoc": "^3.5.5",

@@ -23,22 +23,20 @@ import test = require("tape");
 
 const cases = {
   "should correctly generate Int64 constants": function(assert) {
-    const EXPECTED_SMALL_INT64 = new Int64(42);
-    const EXPECTED_SMALL_INT64_AS_NUMBER = 42;
-    const EXPECTED_MAX_JS_SAFE_INT64 = new Int64(9007199254740991);
-    const EXPECTED_MAX_JS_SAFE_INT64_AS_NUMBER = 9007199254740991;
-    const EXPECTED_MIN_JS_SAFE_INT64 = new Int64(-9007199254740991);
-    const EXPECTED_MIN_JS_SAFE_INT64_AS_NUMBER = -9007199254740991;
-    const EXPECTED_BIGGER_THAN_JS_SAFE_INT64 = new Int64('2000000000000000');  // hex-encoded
-    const EXPECTED_LOWER_THAN_JS_SAFE_INT64 = new Int64('e000000000000000');  // hex-encoded 2's complement
-    const EXPECTED_MAX_SIGNED_INT64 = new Int64('7fffffffffffffff');  // hex-encoded
-    const EXPECTED_MIN_SIGNED_INT64 = new Int64('8000000000000000'); // hex-encoded 2's complement
-    const EXPECTED_INT64_LIST = [
-      EXPECTED_SMALL_INT64, 
-      EXPECTED_MAX_JS_SAFE_INT64, 
+    const EXPECTED_SMALL_INT64_AS_NUMBER: number = 42;
+    const EXPECTED_SMALL_INT64: Int64 = new Int64(42);
+    const EXPECTED_MAX_JS_SAFE_INT64: Int64 = new Int64(Number.MAX_SAFE_INTEGER);
+    const EXPECTED_MIN_JS_SAFE_INT64: Int64 = new Int64(Number.MIN_SAFE_INTEGER);
+    const EXPECTED_MAX_JS_SAFE_PLUS_ONE_INT64: Int64 = new Int64("0020000000000000"); // hex-encoded
+    const EXPECTED_MIN_JS_SAFE_MINUS_ONE_INT64: Int64 = new Int64("ffe0000000000000"); // hex-encoded 2's complement
+    const EXPECTED_MAX_SIGNED_INT64: Int64 = new Int64("7fffffffffffffff"); // hex-encoded
+    const EXPECTED_MIN_SIGNED_INT64: Int64 = new Int64("8000000000000000"); // hex-encoded 2's complement
+    const EXPECTED_INT64_LIST: Int64[] = [
+      EXPECTED_SMALL_INT64,
+      EXPECTED_MAX_JS_SAFE_INT64,
       EXPECTED_MIN_JS_SAFE_INT64,
-      EXPECTED_BIGGER_THAN_JS_SAFE_INT64,
-      EXPECTED_LOWER_THAN_JS_SAFE_INT64,
+      EXPECTED_MAX_JS_SAFE_PLUS_ONE_INT64,
+      EXPECTED_MIN_JS_SAFE_MINUS_ONE_INT64,
       EXPECTED_MAX_SIGNED_INT64,
       EXPECTED_MIN_SIGNED_INT64
     ];
@@ -46,15 +44,32 @@ const cases = {
     assert.ok(EXPECTED_SMALL_INT64.equals(i64types.SMALL_INT64));
     assert.ok(EXPECTED_MAX_JS_SAFE_INT64.equals(i64types.MAX_JS_SAFE_INT64));
     assert.ok(EXPECTED_MIN_JS_SAFE_INT64.equals(i64types.MIN_JS_SAFE_INT64));
-    assert.ok(EXPECTED_BIGGER_THAN_JS_SAFE_INT64.equals(i64types.BIGGER_THAN_JS_SAFE_INT64));
-    assert.ok(EXPECTED_LOWER_THAN_JS_SAFE_INT64.equals(i64types.LOWER_THAN_JS_SAFE_INT64));
+    assert.ok(
+      EXPECTED_MAX_JS_SAFE_PLUS_ONE_INT64.equals(
+        i64types.MAX_JS_SAFE_PLUS_ONE_INT64
+      )
+    );
+    assert.ok(
+      EXPECTED_MIN_JS_SAFE_MINUS_ONE_INT64.equals(
+        i64types.MIN_JS_SAFE_MINUS_ONE_INT64
+      )
+    );
     assert.ok(EXPECTED_MAX_SIGNED_INT64.equals(i64types.MAX_SIGNED_INT64));
     assert.ok(EXPECTED_MIN_SIGNED_INT64.equals(i64types.MIN_SIGNED_INT64));
-    assert.equal(EXPECTED_SMALL_INT64_AS_NUMBER, i64types.SMALL_INT64.toNumber());
-    assert.equal(EXPECTED_MAX_JS_SAFE_INT64_AS_NUMBER, i64types.MAX_JS_SAFE_INT64.toNumber());
-    assert.equal(EXPECTED_MIN_JS_SAFE_INT64_AS_NUMBER, i64types.MIN_JS_SAFE_INT64.toNumber());
+    assert.equal(
+      EXPECTED_SMALL_INT64_AS_NUMBER,
+      i64types.SMALL_INT64.toNumber()
+    );
+    assert.equal(
+      Number.MAX_SAFE_INTEGER,
+      i64types.MAX_JS_SAFE_INT64.toNumber()
+    );
+    assert.equal(
+      Number.MIN_SAFE_INTEGER,
+      i64types.MIN_JS_SAFE_INT64.toNumber()
+    );
 
-    for (let i=0; i < EXPECTED_INT64_LIST.length; ++i) {
+    for (let i = 0; i < EXPECTED_INT64_LIST.length; ++i) {
       assert.ok(EXPECTED_INT64_LIST[i].equals(i64types.INT64_LIST[i]));
     }
     assert.end();
