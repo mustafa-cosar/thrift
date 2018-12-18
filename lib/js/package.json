@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "jsdoc": "^3.5.5",
+    "json-int64": "^0.0.1",
     "nopt": "^4.0.1"
   }
 }
