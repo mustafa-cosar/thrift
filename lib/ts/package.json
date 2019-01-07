@@ -1,0 +1,28 @@
+{
+  "name": "thrift",
+  "version": "1.0.0",
+  "devDependencies": {
+    "bufferutil": "^4.0.1",
+    "browserify": "^16.2.3",
+    "grunt": "^1.0.2",
+    "grunt-cli": "^1.2.0",
+    "grunt-contrib-concat": "^1.0.1",
+    "grunt-contrib-jshint": "^1.0.0",
+    "grunt-contrib-qunit": "^3.0.1",
+    "grunt-contrib-uglify": "^1.0.1",
+    "grunt-jsdoc": "^2.2.1",
+    "grunt-shell-spawn": "^0.3.10",
+    "jslint": "^0.12.0",
+    "node-int64": "^0.4.0",
+    "typescript": "^3.2.2",
+    "@types/node-int64": "^0.4.29",
+    "@types/qunit": "^2.5.3"
+  },
+  "dependencies": {
+    "bufferutil": "^4.0.1",
+    "jsdoc": "^3.5.5",
+    "json-int64": "^0.0.1",
+    "nopt": "^4.0.1"
+  },
+  "types": "./thrift.d.ts"
+}

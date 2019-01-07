@@ -18,6 +18,10 @@
  */
  /* jshint -W100 */
 
+var Int64 = require("node-int64");
+import { Int64Test } from "./gen-js/Int64Test_types";
+
+
 // Work around for old API used by QUnitAdapter of jsTestDriver
 if (typeof QUnit.log == 'function') {
   // When using real QUnit (fron PhantomJS) log failures to console
@@ -37,14 +41,14 @@ QUnit.module('Int64');
 
   QUnit.test('Int64', function(assert) {
     console.log('Int64 test -- starts');
-    const EXPECTED_SMALL_INT64_AS_NUMBER = 42;
-    const EXPECTED_SMALL_INT64 = new Int64(42);
-    const EXPECTED_MAX_JS_SAFE_INT64 = new Int64(Number.MAX_SAFE_INTEGER);
-    const EXPECTED_MIN_JS_SAFE_INT64 = new Int64(Number.MIN_SAFE_INTEGER);
-    const EXPECTED_MAX_JS_SAFE_PLUS_ONE_INT64 = new Int64("0020000000000000"); // hex-encoded
-    const EXPECTED_MIN_JS_SAFE_MINUS_ONE_INT64 = new Int64("ffe0000000000000"); // hex-encoded 2's complement
-    const EXPECTED_MAX_SIGNED_INT64 = new Int64("7fffffffffffffff"); // hex-encoded
-    const EXPECTED_MIN_SIGNED_INT64 = new Int64("8000000000000000"); // hex-encoded 2's complement
+    const EXPECTED_SMALL_INT64_AS_NUMBER: number = 42;
+    const EXPECTED_SMALL_INT64: typeof Int64 = new Int64(42);
+    const EXPECTED_MAX_JS_SAFE_INT64: typeof Int64 = new Int64(Number.MAX_SAFE_INTEGER);
+    const EXPECTED_MIN_JS_SAFE_INT64: typeof Int64 = new Int64(Number.MIN_SAFE_INTEGER);
+    const EXPECTED_MAX_JS_SAFE_PLUS_ONE_INT64: typeof Int64 = new Int64("0020000000000000"); // hex-encoded
+    const EXPECTED_MIN_JS_SAFE_MINUS_ONE_INT64: typeof Int64 = new Int64("ffe0000000000000"); // hex-encoded 2's complement
+    const EXPECTED_MAX_SIGNED_INT64: typeof Int64 = new Int64("7fffffffffffffff"); // hex-encoded
+    const EXPECTED_MIN_SIGNED_INT64: typeof Int64 = new Int64("8000000000000000"); // hex-encoded 2's complement
     const EXPECTED_INT64_LIST = [
       EXPECTED_SMALL_INT64,
       EXPECTED_MAX_JS_SAFE_INT64,
@@ -54,7 +58,6 @@ QUnit.module('Int64');
       EXPECTED_MAX_SIGNED_INT64,
       EXPECTED_MIN_SIGNED_INT64
     ];
-
     assert.ok(EXPECTED_SMALL_INT64.equals(Int64Test.SMALL_INT64));
     assert.ok(EXPECTED_MAX_JS_SAFE_INT64.equals(Int64Test.MAX_JS_SAFE_INT64));
     assert.ok(EXPECTED_MIN_JS_SAFE_INT64.equals(Int64Test.MIN_JS_SAFE_INT64));

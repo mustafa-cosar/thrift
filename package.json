@@ -30,6 +30,7 @@
   "directories": {
     "lib": "./lib/nodejs/lib/thrift"
   },
+  "browser": "./lib/nodejs/lib/thrift/browser.js",
   "main": "./lib/nodejs/lib/thrift",
   "engines": {
     "node": ">= 4.1.0"

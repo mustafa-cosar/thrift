@@ -21,6 +21,8 @@
  * details.
  */
 
+namespace js Int64Test
+
 const i64 SMALL_INT64 = 42
 const i64 MAX_JS_SAFE_INT64 = 9007199254740991
 const i64 MIN_JS_SAFE_INT64 = -9007199254740991
