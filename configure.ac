@@ -20,7 +20,7 @@
 AC_PREREQ(2.65)
 AC_CONFIG_MACRO_DIR([./aclocal])
 
-AC_INIT([thrift], [1.0.0-dev])
+AC_INIT([thrift], [1.0.0])
 
 AC_CONFIG_AUX_DIR([.])
 
@@ -102,10 +102,7 @@ AC_PROG_AWK
 AC_PROG_RANLIB
 
 AC_LANG([C++])
-AX_CXX_COMPILE_STDCXX_11([noext], [optional])
-if test "$ac_success" = "no"; then
-  CXXFLAGS="$CXXFLAGS -Wno-variadic-macros -Wno-long-long -Wno-c++11-long-long"
-fi
+AX_CXX_COMPILE_STDCXX_11([noext], [mandatory])
 
 AM_EXTRA_RECURSIVE_TARGETS([style])
 AC_SUBST(CPPSTYLE_CMD, 'find . -type f \( -iname "*.h" -or -iname "*.cpp" -or -iname "*.cc" -or -iname "*.tcc" \) -printf "Reformatting: %h/%f\n" -exec clang-format -i {} \;')
@@ -141,6 +138,7 @@ if test "$enable_libs" = "no"; then
   with_nodets="no"
   with_lua="no"
   with_rs="no"
+  with_swift="no"
 fi
 
 AX_THRIFT_LIB(cpp, [C++], yes)
@@ -157,7 +155,7 @@ if test "$with_cpp" = "yes";  then
     have_cpp="yes"
   fi
 
-  AX_LIB_EVENT([1.0])
+  AX_LIB_EVENT([2.0])
   have_libevent=$success
 
   AX_LIB_ZLIB([1.2.3])
@@ -324,10 +322,13 @@ AM_CONDITIONAL(WITH_TWISTED_TEST, [test "$have_trial" = "yes"])
 # It's distro specific and far from ideal but needed to cross test py2-3 at once.
 # TODO: find "python2" if it's 3.x
 have_py3="no"
-if python --version 2>&1 | grep -q "Python 2"; then
-  AC_PATH_PROGS([PYTHON3], [python3 python3.5 python35 python3.4 python34])
-  if test -n "$PYTHON3"; then
-    have_py3="yes"
+AX_THRIFT_LIB(py3, [Py3], yes)
+if test "$with_py3" = "yes"; then
+  if $PYTHON --version 2>&1 | grep -q "Python 2"; then
+    AC_PATH_PROGS([PYTHON3], [python3 python3.7 python37 python3.6 python36 python3.5 python35 python3.4 python34])
+    if test -n "$PYTHON3"; then
+      have_py3="yes"
+    fi
   fi
 fi
 AM_CONDITIONAL(WITH_PY3, [test "$have_py3" = "yes"])
@@ -444,6 +445,16 @@ if test "$with_go" = "yes";  then
 fi
 AM_CONDITIONAL(WITH_GO, [test "$have_go" = "yes"])
 AM_CONDITIONAL([GOVERSION_LT_17], [test "$go_version_lt_17" = "yes"])
+
+AX_THRIFT_LIB(swift, [Swift], yes)
+have_swift="no"
+if test "$with_swift" = "yes"; then
+  AC_PATH_PROG([SWIFT], [swift])
+  if test "x$SWIFT" != "x" -a "x$SWIFT" != "x"; then
+    have_swift="yes"
+  fi
+fi
+AM_CONDITIONAL([WITH_SWIFT], [test "$have_swift" = "yes"])
 
 AX_THRIFT_LIB(rs, [Rust], yes)
 have_rs="no"
@@ -774,24 +785,6 @@ AC_SUBST(GCOV_CFLAGS)
 AC_SUBST(GCOV_CXXFLAGS)
 AC_SUBST(GCOV_LDFLAGS)
 
-AC_ARG_ENABLE(boostthreads,
-              [  --enable-boostthreads      use boost threads, instead of POSIX pthread (experimental) ],
-              [case "${enableval}" in
-                yes) ENABLE_BOOSTTHREADS=1 ;;
-                no) ENABLE_BOOSTTHREADS=0 ;;
-                *) AC_MSG_ERROR(bad value ${enableval} for --enable-cov) ;;
-              esac],
-              [ENABLE_BOOSTTHREADS=2])
-
-
-if test "x[$]ENABLE_BOOSTTHREADS" = "x1"; then
-  AC_MSG_WARN(enable boostthreads)
-  AC_DEFINE([USE_BOOST_THREAD], [1], [experimental --enable-boostthreads that replaces POSIX pthread by boost::thread])
-  LIBS="-lboost_thread $LIBS"
-fi
-
-AM_CONDITIONAL([WITH_BOOSTTHREADS], [test "x[$]ENABLE_BOOSTTHREADS" = "x1"])
-
 AC_CONFIG_HEADERS(config.h:config.hin)
 AC_CONFIG_HEADERS(lib/cpp/src/thrift/config.h:config.hin)
 AC_CONFIG_HEADERS(lib/c_glib/src/thrift/config.h:config.hin)
@@ -851,6 +844,7 @@ AC_CONFIG_FILES([
   lib/rs/Makefile
   lib/rs/test/Makefile
   lib/lua/Makefile
+  lib/swift/Makefile
   lib/ts/Makefile
   lib/xml/Makefile
   lib/xml/test/Makefile
@@ -930,6 +924,8 @@ if test "$have_lua" = "yes" ; then MAYBE_LUA="lua" ; else MAYBE_LUA="" ; fi
 AC_SUBST([MAYBE_LUA])
 if test "$have_rs" = "yes" ; then MAYBE_RS="rs" ; else MAYBE_RS="" ; fi
 AC_SUBST([MAYBE_RS])
+if test "$have_swift" = "yes" ; then MAYBE_SWIFT="swift" ; else MAYBE_SWIFT="" ; fi
+AC_SUBST([MAYBE_SWIFT])
 if test "$have_dotnetcore" = "yes" ; then MAYBE_DOTNETCORE="netcore" ; else MAYBE_DOTNETCORE="" ; fi
 AC_SUBST([MAYBE_DOTNETCORE])
 if test "$have_cl" = "yes" ; then MAYBE_CL="cl" ; else MAYBE_CL="" ; fi
@@ -962,6 +958,7 @@ echo "Building Python Library ...... : $have_python"
 echo "Building Py3 Library ......... : $have_py3"
 echo "Building Ruby Library ........ : $have_ruby"
 echo "Building Rust Library ........ : $have_rs"
+echo "Building Swift Library ....... : $have_swift"
 
 if test "$have_csharp" = "yes" ; then
   echo
@@ -1090,6 +1087,12 @@ if test "$have_rs" = "yes" ; then
   echo "   Using Cargo................ : $CARGO"
   echo "   Using rustc................ : $RUSTC"
   echo "   Using Rust version......... : $($RUSTC --version)"
+fi
+if test "$have_swift" = "yes" ; then
+  echo
+  echo "Swift Library:"
+  echo "   Using Swift ............... : $SWIFT"
+  echo "   Using Swift version ....... : $($SWIFT --version | head -1)"
 fi
 echo
 echo "If something is missing that you think should be present,"
