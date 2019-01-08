@@ -187,7 +187,6 @@
     -->
     <jsl:jslint options="evil,forin,browser,bitwise,regexp,newcap,immed" encoding="UTF-8">
       <formatter type="plain" />
-      <fileset dir="${genjs}" includes="**/*.js" />
       <fileset dir="../src" includes="thrift.js" />
 
       <!-- issues with unsafe character -->
