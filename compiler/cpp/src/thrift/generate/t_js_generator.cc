@@ -458,7 +458,7 @@ string t_js_generator::js_includes() {
     result += js_const_type_ + "Int64 = require('node-int64');\n";
     return result;
   }
-  string result = "if (typeof Int64 === 'undefined' && typeof require === 'function') {" + js_const_type_ + "Int64 = require('node-int64');}\n";
+  string result = "if (typeof Int64 === 'undefined' && typeof require === 'function') {\n  " + js_const_type_ + "Int64 = require('node-int64');\n}\n";
   return result;
 }
 
