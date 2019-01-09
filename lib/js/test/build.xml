@@ -28,13 +28,13 @@
   <property name="build" location="build" />
   <property name="jar.file" location="${build}/jstest.jar" />
 
-  <!-- the root directory, where you unpack thrift distibution (e.g. thrift-0.x.x.tar.gz) -->
+  <!-- the root directory, where you unpack thrift distibution (e.g.: thrift-0.x.x.tar.gz) -->
   <property name="thrift.dir" location="../../../" />
   <property name="thrift.java.dir" location="${thrift.dir}/lib/java" />
   <property name="build.tools.dir" location="${thrift.java.dir}/build/tools/"/>
   <property file="${basedir}/build.properties"/>
 
-  <!-- Include the base java properties file -->
+  <!-- Include the base Java properties file -->
   <property file="${thrift.java.dir}/gradle.properties" />
 
   <property name="thrift.compiler" location="${thrift.dir}/compiler/cpp/thrift" />
