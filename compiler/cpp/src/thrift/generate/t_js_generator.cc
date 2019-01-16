@@ -41,6 +41,10 @@ using std::stringstream;
 using std::vector;
 
 static const string endl = "\n"; // avoid ostream << std::endl flushes
+// largest consecutive integer representable by a double (2 ^ 53 - 1)
+static const long max_safe_integer = 0x1fffffffffffff;
+// smallest consecutive number representable by a double (-2 ^ 53 + 1)
+static const long min_safe_integer = -max_safe_integer;
 
 #include "thrift/generate/t_oop_generator.h"
 
@@ -200,6 +204,7 @@ public:
 
   std::string js_includes();
   std::string ts_includes();
+  std::string ts_service_includes();
   std::string render_includes();
   std::string render_ts_includes();
   std::string declare_field(t_field* tfield, bool init = false, bool obj = false);
@@ -297,7 +302,7 @@ public:
    * Returns "declare " if no module was defined.
    * @return string
    */
-  string ts_declare() { return (ts_module_.empty() ? "declare " : ""); }
+  string ts_declare() { return (ts_module_.empty() ? (gen_node_ ? "declare " : "export declare ") : ""); }
 
   /**
    * Returns "?" if the given field is optional or has a default value.
@@ -431,6 +436,8 @@ void t_js_generator::init_generator() {
       f_types_ << "if (typeof " << pns << " === 'undefined') {" << endl;
       f_types_ << "  " << pns << " = {};" << endl;
       f_types_ << "}" << endl;
+      f_types_ << "" << "if (typeof module !== 'undefined' && module.exports) {" << endl;
+      f_types_ << "  module.exports." << pns << " = " << pns << ";" << endl << "}" << endl;
     }
     if (gen_ts_) {
       ts_module_ = pns;
@@ -449,10 +456,11 @@ string t_js_generator::js_includes() {
     if (!gen_es6_) {
       result += js_const_type_ + "Q = thrift.Q;\n";
     }
+    result += js_const_type_ + "Int64 = require('node-int64');\n";
     return result;
   }
-
-  return "";
+  string result = "if (typeof Int64 === 'undefined' && typeof require === 'function') {\n  " + js_const_type_ + "Int64 = require('node-int64');\n}\n";
+  return result;
 }
 
 /**
@@ -463,10 +471,24 @@ string t_js_generator::ts_includes() {
     return string(
         "import thrift = require('thrift');\n"
         "import Thrift = thrift.Thrift;\n"
-        "import Q = thrift.Q;\n");
+        "import Q = thrift.Q;\n"
+        "import Int64 = require('node-int64');");
   }
+  return string("import Int64 = require('node-int64');");
+}
 
-  return "";
+/**
+ * Prints service ts imports
+ */
+string t_js_generator::ts_service_includes() {
+  if (gen_node_) {
+    return string(
+        "import thrift = require('thrift');\n"
+        "import Thrift = thrift.Thrift;\n"
+        "import Q = thrift.Q;\n"
+        "import Int64 = require('node-int64');");
+  }
+  return string("import Int64 = require('node-int64');");
 }
 
 /**
@@ -614,8 +636,17 @@ string t_js_generator::render_const_value(t_type* type, t_const_value* value) {
     case t_base_type::TYPE_I8:
     case t_base_type::TYPE_I16:
     case t_base_type::TYPE_I32:
-    case t_base_type::TYPE_I64:
       out << value->get_integer();
+      break;
+    case t_base_type::TYPE_I64:
+      {
+        int64_t const& integer_value = value->get_integer();
+        if (integer_value <= max_safe_integer && integer_value >= min_safe_integer) {
+          out << "new Int64(" << integer_value << ")";
+        } else {
+          out << "new Int64('" << std::hex << integer_value << std::dec << "')";
+        }
+      }
       break;
     case t_base_type::TYPE_DOUBLE:
       if (value->get_type() == t_const_value::CV_INTEGER) {
@@ -1107,9 +1138,12 @@ void t_js_generator::generate_service(t_service* tservice) {
       f_service_ts_ << "/// <reference path=\"" << tservice->get_extends()->get_name()
                     << ".d.ts\" />" << endl;
     }
-    f_service_ts_ << autogen_comment() << endl;
     if (gen_node_) {
-      f_service_ts_ << ts_includes() << endl << render_ts_includes() << endl;
+      f_service_ts_ << autogen_comment() << endl << ts_includes() << endl << render_ts_includes() << endl;
+    } else {
+      f_service_ts_ << autogen_comment() << endl << ts_includes() << endl << endl;
+    }
+    if (gen_node_) {
       f_service_ts_ << "import ttypes = require('./" + program_->get_name() + "_types');" << endl;
       // Generate type aliases
       // enum
@@ -1140,9 +1174,18 @@ void t_js_generator::generate_service(t_service* tservice) {
         f_service_ts_ << "import " << (*s_iter)->get_name() << " = ttypes."
                   << js_namespace(program_) << (*s_iter)->get_name() << endl;
       }
+    } else {
+      f_service_ts_ << "import { " << program_->get_name() << " } from \"./" << program_->get_name() << "_types\";" << endl << endl;
     }
     if (!ts_module_.empty()) {
-      f_service_ts_ << "declare module " << ts_module_ << " {";
+      if (gen_node_) {
+        f_service_ts_ << "declare module " << ts_module_ << " {";
+      } else {
+        f_service_ts_ << "declare module \"./" << program_->get_name() << "_types\" {" << endl;
+        indent_up();
+        f_service_ts_ << ts_indent() << "module " << program_->get_name() << " {" << endl;
+        indent_up();
+      }
     }
   }
 
@@ -1170,7 +1213,13 @@ void t_js_generator::generate_service(t_service* tservice) {
   f_service_.close();
   if (gen_ts_) {
     if (!ts_module_.empty()) {
-      f_service_ts_ << "}";
+      if (gen_node_) {
+        f_service_ts_ << "}" << endl;
+      } else {
+        indent_down();
+        f_service_ts_ << ts_indent() << "}" << endl;
+        f_service_ts_ << "}" << endl;
+      }
     }
     f_service_ts_.close();
   }
@@ -2594,9 +2643,11 @@ string t_js_generator::ts_get_type(t_type* type) {
       break;
     case t_base_type::TYPE_I16:
     case t_base_type::TYPE_I32:
-    case t_base_type::TYPE_I64:
     case t_base_type::TYPE_DOUBLE:
       ts_type = "number";
+      break;
+    case t_base_type::TYPE_I64:
+      ts_type = "Int64";
       break;
     case t_base_type::TYPE_VOID:
       ts_type = "void";
