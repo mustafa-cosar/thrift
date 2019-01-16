@@ -520,7 +520,7 @@ string t_js_generator::render_ts_includes() {
   if (gen_node_) {
     const vector<t_program*>& includes = program_->get_includes();
     for (size_t i = 0; i < includes.size(); ++i) {
-      result += js_const_type_ + make_valid_nodeJs_identifier(includes[i]->get_name()) + "_ttypes = require('./" + includes[i]->get_name()
+      result += "import " + make_valid_nodeJs_identifier(includes[i]->get_name()) + "_ttypes = require('./" + includes[i]->get_name()
                 + "_types');\n";
     }
     if (includes.size() > 0) {
