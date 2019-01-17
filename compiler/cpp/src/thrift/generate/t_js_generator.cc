@@ -1244,8 +1244,8 @@ void t_js_generator::generate_service_processor(t_service* tservice) {
       }
       f_service_ts_ << "{" << endl;
       indent_up();
-      f_service_ts_ << ts_indent() << "private _handler: Object;" << endl << endl;
-      f_service_ts_ << ts_indent() << "constructor(handler: Object);" << endl;
+      f_service_ts_ << ts_indent() << "private _handler: object;" << endl << endl;
+      f_service_ts_ << ts_indent() << "constructor(handler: object);" << endl;
       f_service_ts_ << ts_indent() << "process(input: thrift.TProtocol, output: thrift.TProtocol): void;" << endl;
       indent_down();
     }
